@@ -91,3 +91,8 @@ Hints: Use tools from all lectures in this section so far 😉
 // let sum2 = [36, 32, 76, 48, 28];
 // console.log(sum2.reduce((acc, crr) => acc + crr) / sum2.length);
 // console.log(sum.reduce((acc, crr) => acc + crr) / sum.length);
+
+const addTwoNum = function () {
+  console.log(10 + 20);
+};
+addTwoNum();
