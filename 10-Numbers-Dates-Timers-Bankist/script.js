@@ -3,9 +3,6 @@
 /////////////////////////////////////////////////
 // BANKIST APP
 
-/////////////////////////////////////////////////
-// Data
-
 // DIFFERENT DATA! Contains movement dates, currency and locale
 
 const account1 = {
@@ -87,7 +84,27 @@ const account4 = {
   currency: 'bdt',
   locale: 'bn-Bd',
 };
-const accounts = [account1, account2, account3, account4];
+
+const account5 = {
+  owner: 'Bijoy Abdullah',
+  movements: [500, 400, 2547, -590, 100, 200, -550, -340].reverse(),
+  interestRate: 5.5,
+  pin: 5555,
+
+  movementsDates: [
+    '2020-01-28T09:15:04.904Z',
+    '2020-04-01T10:17:24.185Z',
+    '2020-05-08T14:11:59.604Z',
+    '2020-05-27T17:01:17.194Z',
+    '2020-07-11T23:36:17.929Z',
+    '2023-03-02T07:02:02.383Z',
+    '2023-03-01T21:11:17.178Z',
+    '2023-03-06T10:51:36.790Z',
+  ],
+  currency: 'bdt',
+  locale: 'bn-Bd',
+};
+const accounts = [account1, account2, account3, account4, account5];
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -138,6 +155,32 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
+const startLogOutTimer = function (val) {
+  // Set time for 3 minutes
+  let time = 60;
+  const trick = () => {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+
+    // In each call print the remaining time ot UI
+    labelTimer.textContent = `${min}:${sec}`;
+
+    // When time is equal to 0 second stop timer and log out user
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Log in to get started';
+      containerApp.style.opacity = 0;
+    }
+
+    // Decrease by 1s
+    time--;
+  };
+  trick();
+
+  const timer = setInterval(trick, 1000);
+  return timer;
+};
+
 const formatCurr = function (val, locale, currency) {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -149,7 +192,7 @@ const formatMovementDate = function (date, locale) {
   const calcDaysPassed = (date1, date2) =>
     Math.floor(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
   const daysPassed = calcDaysPassed(new Date(), date);
-  console.log(daysPassed);
+  // console.log(daysPassed);
   if (daysPassed === 0) return 'Today';
   if (daysPassed === 1) return 'YesterDay';
   if (daysPassed <= 7) return `${daysPassed} days ago`;
@@ -219,26 +262,13 @@ const calcDisplaySummary = function (acc) {
     .map(interest => (interest * acc.interestRate) / 100)
     .filter(int => int >= 1)
     .reduce((acc, cur) => (acc += cur), 0);
-  console.log(interest);
+  // console.log(interest);
   labelSumInterest.textContent = formatCurr(interest, acc.locale, acc.currency);
 };
 
 ///////////////////////////////////////////////////
 // Event Handlers
-let currentAccount;
-
-// Fake always logged in
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
-
-// const day = `${now.getDate()}`.padStart(2, 0);
-// const month = `${now.getMonth() + 1}`.padStart(2, 0);
-// const year = now.getFullYear();
-// const hours = `${now.getHours()}`.padStart(2, 0);
-// const min = `${now.getMinutes()}`.padStart(2, 0);
-// const sec = `${now.getSeconds()}`.padStart(2, 0);
-// labelDate.textContent = `${day}/${month}/${year}, ${hours}:${min}:${sec}`;
+let currentAccount, timer;
 
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
@@ -269,6 +299,8 @@ btnLogin.addEventListener('click', function (e) {
 
     inputLoginPin.value = inputLoginUsername.value = '';
     inputLoginPin.blur();
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
     updateUI(currentAccount);
   }
 });
@@ -297,6 +329,10 @@ btnTransfer.addEventListener('click', function (e) {
     inputTransferAmount.blur() && inputTransferTo.blur();
     // Updating the UI
     updateUI(currentAccount);
+
+    // Reset Timer
+    clearInterval(timer);
+    timer = startLogOutTimer();
   }
 });
 
@@ -311,9 +347,13 @@ btnLoan.addEventListener('click', function (e) {
       // Add Load date;
       currentAccount.movementsDates.push(new Date().toISOString());
       updateUI(currentAccount);
+
+      // Reset Timer
+      clearInterval(timer);
+      timer = startLogOutTimer();
       console.log(amount, 'before and after: ', currentAccount.movements);
-      inputLoanAmount.value = '';
-    }, 1500);
+    }, 2500);
+    inputLoanAmount.value = '';
   }
 });
 
